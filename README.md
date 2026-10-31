@@ -1,6 +1,6 @@
 # Serving ML Models: Student Details and Individual Member Contributions
 
-**Name of the team on GitHub Classroom:** `<your team name>`
+**Name of the team on GitHub Classroom:** `C1`
 
 ---
 
@@ -16,22 +16,25 @@
 
 **1. Retail Sales Regression API**
 
-- Trained the Lasso regression model in `regressionC1.ipynb`. The model is a
-  scikit-learn pipeline (imputation, scaling, one-hot encoding, Lasso) that predicts
-  a store's daily sales revenue in KES.
-- Exported the fitted pipeline to `models/retail_sales_regressor.joblib`.
-- Added the `POST /predict/regression` endpoint to `api.py`:
-  - Loads the saved model once at startup and never retrains it.
-  - Validates the request and returns a `400` for a missing or invalid JSON body,
-    missing features, non-numeric values in numeric fields, and empty values in
-    categorical fields.
-  - Accepts `null` for numeric fields because the pipeline imputes missing values.
-  - Converts the prediction back to KES with `np.expm1`, because the model was
-    trained on `log1p(daily_sales_revenue_kes)`.
+Contribution
 
-**Example request**
+1. Retail Sales Regression API
 
-```json
+Trained a Lasso regression pipeline (imputation, scaling, one-hot encoding, Lasso) in regressionC1.ipynb to predict a store's daily sales revenue in KES, and exported it to models/retail_sales_regressor.joblib.
+Added the POST /predict/regression endpoint to the shared api.py:
+Loads the saved model once at startup and never retrains it.
+Validates the request and returns a 400 for a missing or invalid JSON body, missing features, non-numeric values in numeric fields, and empty values in categorical fields.
+Accepts null for numeric fields because the pipeline imputes missing values.
+Converts the prediction back to KES with np.expm1, because the model was trained on log1p(daily_sales_revenue_kes).
+Deployed the combined API (classification and regression) to Render with Gunicorn. requirements.txt pins scikit-learn==1.6.1, and the Python version is pinned. The live service responds on / and lists both endpoints.
+Debugged deployment failures from the Render logs: a syntax error from a clipped line, a leftover requests import from the lab example, a missing flask-cors dependency, a malformed requirements.txt, and Render defaulting to Python 3.14.
+Endpoint
+
+POST /predict/regression
+
+Request
+
+json
 {
   "store_format": "Supermarket",
   "location_type": "Mall",
@@ -47,29 +50,21 @@
   "avg_basket_size_kes": 1200.0,
   "local_events_nearby": 0
 }
-```
 
-**Example response**
+Response
+{
+    "endpoints": {
+        "/predict/classification": "POST - financial distress classification",
+        "/predict/regression": "POST - retail daily sales revenue (KES)"
+    },
+    "message": "ML model serving API is running"
+}
 
-```json
-{ "predicted_daily_sales_revenue_kes": 0.0 }
-```
-
-Replace the value above with the output from your own test run.
-
-### What I learned
-
-- A saved model must be loaded under the same scikit-learn version it was saved with.
-  The classification model was saved with 1.6.1 and my first regression model with
-  1.9.0, so one `api.py` could not load both. I re-saved my model under 1.6.1, and
-  the version should be pinned in `requirements.txt`.
-- When a model is trained on a transformed target (`log1p`), the API has to reverse
-  the transformation, otherwise it returns values on the wrong scale.
-- Serving a model from disk keeps the API fast and predictable, because nothing is
-  retrained on each request.
-- Input validation turns confusing server errors into clear `400` responses.
-
----
+What I learned
+A saved model must be loaded under the same scikit-learn version it was saved with. My model was saved with 1.9.0 and the classification model with 1.6.1, so one api.py could not load both. I re-saved my model under 1.6.1 and pinned the version in requirements.txt.
+If the target was transformed during training (log1p), the API has to reverse it, otherwise predictions come back on the wrong scale.
+Deployment errors are best read from the server logs, because the API's own error messages are deliberately generic.
+A 405 Method Not Allowed means the route exists but was called with the wrong HTTP method.
 
 ## Member 2
 
