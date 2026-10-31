@@ -46,7 +46,8 @@ NUMERIC_FEATURES = [
     "net_profit_margin_pct",
 ]
 
-egression model (Member 1): retail daily sales revenue (KES)
+#----------------------------------------------------------------------------
+#Regression model (Member 1): retail daily sales revenue (KES)
 # ---------------------------------------------------------------------------
 REGRESSION_MODEL_PATH = BASE_DIR / "models" / "retail_sales_regressor.joblib"
  
