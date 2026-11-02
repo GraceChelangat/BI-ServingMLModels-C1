@@ -117,6 +117,62 @@ def predict_classification():
             "error": "Prediction failed. Check the input data and model."
         }), 500
 
+# ---------------- Clustering (K-Means) ----------------
+CLUSTER_BUNDLE_PATH = BASE_DIR / "models" / "ecommerce_clustering_bundle.joblib"
 
+try:
+    _bundle = joblib.load(CLUSTER_BUNDLE_PATH)
+except FileNotFoundError:
+    raise RuntimeError(
+        f"Clustering bundle not found at {CLUSTER_BUNDLE_PATH}. "
+        "Place ecommerce_clustering_bundle.joblib in the models folder."
+    )
+
+cluster_imputer = _bundle["imputer"]
+cluster_scaler = _bundle["scaler"]
+cluster_model = _bundle["model"]
+CLUSTER_FEATURES = _bundle["clustering_features"]
+CLUSTER_SEGMENT_NAMES = _bundle["segment_names"]
+
+
+@app.route("/predict/clustering", methods=["POST"])
+def predict_clustering():
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return jsonify({"error": "Request body must be a valid JSON object."}), 400
+
+    missing_features = [f for f in CLUSTER_FEATURES if f not in data]
+    if missing_features:
+        return jsonify({
+            "error": "Missing required features.",
+            "missing_features": missing_features,
+        }), 400
+
+    values = []
+    for feature in CLUSTER_FEATURES:
+        value = data[feature]
+        try:
+            if isinstance(value, bool):
+                raise ValueError
+            values.append(float(value))
+        except (TypeError, ValueError):
+            return jsonify({"error": f"Feature '{feature}' must be numeric."}), 400
+
+    input_df = pd.DataFrame([values], columns=CLUSTER_FEATURES)
+
+    try:
+        imputed = cluster_imputer.transform(input_df)
+        scaled = cluster_scaler.transform(imputed)
+        cluster = int(cluster_model.predict(scaled)[0])
+        return jsonify({
+            "predicted_cluster": cluster,
+            "segment_name": CLUSTER_SEGMENT_NAMES.get(cluster),
+        }), 200
+    except Exception:
+        app.logger.exception("Clustering prediction failed.")
+        return jsonify({
+            "error": "Prediction failed. Check the input data and model."
+        }), 500
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=False)
