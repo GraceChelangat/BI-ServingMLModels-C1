@@ -16,4 +16,4 @@ htmlcov/
 # Editor and operating system files
 .vscode/
 .DS_Store
-Thumbs.db
+Thumbs.db.venv/

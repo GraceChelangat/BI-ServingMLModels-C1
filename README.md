@@ -92,15 +92,66 @@ The trained model is loaded from:
 
 | Details | Comment |
 | ------- | ------- |
-| **Student ID** | |
-| **Name** | |
+| **Student ID** |166567 |
+| **Name** |Nicole Wachira |
+| **Branch** | [`feature/clustering-endpoint`](https://github.com/GraceChelangat/BI-ServingMLModels-C1/tree/feature/clustering-endpoint) |
 
 ### Contribution
 
-*What part of the lab did you personally contribute to (provide a link to the
-branch(es)), and what did you learn from it?*
+**1. E-commerce Customer Clustering API**
+
+- Used the K-Means model our group trained in the clustering lab (`ecommerce_customer_clustering.ipynb`). It was saved as a bundle (`models/ecommerce_clustering_bundle.joblib`) holding the median imputer, StandardScaler, K-Means model (5 clusters), the feature list and the segment names.
+- Added the `POST /predict/clustering` endpoint to the shared `api.py`:
+  - Loads the saved bundle once at startup, using a path built from `BASE_DIR`, and never retrains it.
+  - Applies the same steps as training (impute, scale, predict) with the four features in training order.
+  - Returns the cluster number and its segment name.
+  - Validates the request and returns a 400 for a non-JSON body, missing features and non-numeric values.
+- Fixed the local environment: the bundle was saved with scikit-learn 1.6.1, which has no package for Python 3.14, so I created a Python 3.12 virtual environment and installed the team's pinned `requirements.txt`.
+- Tested with Postman and curl: an active customer returned cluster 1 and a dormant customer returned cluster 2, matching the notebook, and the error cases returned 400.
+
+**Endpoint**
+
+`POST /predict/clustering`
+
+**Request**
+
+```json
+{
+  "recency_days": 5,
+  "frequency_per_year": 28,
+  "avg_order_value_kes": 9500,
+  "num_categories_purchased": 6
+}
+```
+
+**Response**
+
+```json
+{
+  "predicted_cluster": 1,
+  "segment_name": "High-Frequency Big Spenders"
+}
+```
+
+**Error response (missing field, 400)**
+
+```json
+{
+  "error": "Missing required features.",
+  "missing_features": ["frequency_per_year", "avg_order_value_kes", "num_categories_purchased"]
+}
+```
+
+**What I learned**
+
+- New data must go through exactly the same preprocessing and feature order as the training data. Otherwise the model still returns a cluster number, but a wrong one, with no error.
+- A saved model must be loaded under the same scikit-learn version it was saved with. Our bundle was saved with 1.6.1. A newer version loaded the file but crashed at prediction time, so I used a matching environment.
+- Models are loaded once at startup and never retrained inside the API. This is faster and keeps predictions consistent.
+- Clear error messages (400) and documentation matter, because the API is how other people use the model.
+- A 405 Method Not Allowed means the route exists but was called with the wrong HTTP method (opening a POST route in the browser sends GET).
 
 ---
+
 
 ## Member 4
 
