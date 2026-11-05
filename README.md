@@ -157,13 +157,95 @@ The trained model is loaded from:
 
 | Details | Comment |
 | ------- | ------- |
-| **Student ID** | |
-| **Name** | |
+| **Student ID** | `160819` |
+| **Name** | `Alfred Njaku` |
+| **Branch** | [`feature/association-rules-endpoint`](https://github.com/GraceChelangat/BI-ServingMLModels-C1/tree/feature/association-rules-endpoint) |
 
 ### Contribution
 
-*What part of the lab did you personally contribute to (provide a link to the
-branch(es)), and what did you learn from it?*
+**4. Streaming Series Association Rules Recommender API**
+
+- Used the 21 cleaned association rules our group saved in the Association Rule Mining lab (`AssociationRuleMining-C1/outputs/clean_association_rules.pkl`, mined with min support 0.02, min confidence 0.30, min lift 2.0) and the show lookup table (`outputs/show_lookup.csv`).
+- Wrote `scripts/save_association_bundle.py`, which loads those saved rules (without re-mining them) and saves them with joblib as `models/association_rules_bundle.joblib`, the same format the other members use. The bundle holds the rules, the `show_id` → show name lookup and the mining thresholds. The rules are stored as plain Python objects (frozensets and floats, not a DataFrame), so loading them does not depend on the pandas version on the server.
+- Added the `POST /recommend/association` endpoint to the shared `api.py`:
+  - Loads the saved bundle once at startup with `joblib.load`, using a path built from `BASE_DIR`, and never re-mines the rules.
+  - Accepts the shows a viewer has watched, as show names or show IDs, in any letter case.
+  - A rule matches when its whole antecedent is contained in the viewer's basket.
+  - Removes shows the viewer has already watched, keeps one entry per recommended show (its strongest rule), and ranks by confidence, then lift, then support.
+  - Returns an empty list with a clear message when no rule matches.
+  - Returns a 400 for a non-JSON body, a missing or empty `items` list, unknown shows (listing the valid ones) and an invalid `top_n`.
+- Added `tests/test_association.py` (10 pytest tests) covering a match, name/ID equivalence, `top_n`, no match, unknown shows and bad requests.
+
+**Endpoint**
+
+`POST /recommend/association`
+
+| Field | Type | Required | Description |
+| ----- | ---- | -------- | ----------- |
+| `items` | list of strings | Yes | Shows already watched, by name (`"Crime City"`) or ID (`"S01"`) |
+| `top_n` | integer | No (default 5) | Maximum number of recommendations |
+
+**Request**
+
+```json
+{
+  "items": ["Galactic Wars", "Time Anomaly"]
+}
+```
+
+**Response (200)**
+
+```json
+{
+  "input_items": ["Galactic Wars", "Time Anomaly"],
+  "recommendations": [
+    {
+      "show_id": "S06",
+      "show_name": "Space Frontier",
+      "because_you_watched": ["Galactic Wars", "Time Anomaly"],
+      "confidence": 0.7681,
+      "lift": 4.844,
+      "support": 0.0303
+    }
+  ]
+}
+```
+
+**No matching rule (200)**
+
+```json
+{
+  "input_items": ["Toon Town"],
+  "recommendations": [],
+  "message": "No recommendations found: none of the saved association rules match these items with a show you have not already watched."
+}
+```
+
+**Unknown show (400)**
+
+```json
+{
+  "error": "Unknown show(s) in 'items'.",
+  "unknown_items": ["Not A Real Show"],
+  "valid_shows": ["Cooking Masters", "Crime City", "..."]
+}
+```
+
+**cURL**
+
+```bash
+curl -X POST http://127.0.0.1:5000/recommend/association \
+  -H "Content-Type: application/json" \
+  -d '{"items": ["Crime City", "The Detective"]}'
+```
+
+**What I learned**
+
+- An association rule recommender has no "model" to predict with; the saved rules *are* the model, so serving it means loading the rules and matching them, not retraining.
+- A rule only applies when its whole antecedent is in the basket, and shows the user has already watched should not be recommended back.
+- Several rules can point to the same show, so results need de-duplicating before they reach the user.
+- "No recommendation" is a valid answer and should return 200 with a message, while bad input should return 400.
+- A saved file is tied to the library versions it was saved with. Keeping the bundle to plain Python objects avoids the pandas and scikit-learn version problems other members hit.
 
 ---
 
