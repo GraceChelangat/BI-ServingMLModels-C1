@@ -251,10 +251,10 @@ curl -X POST http://127.0.0.1:5000/recommend/association \
 
 ## Member 5
 
-| Details | Comment |
-| ------- | ------- |
-| **Student ID** | |
-| **Name** | |
+| Details | Comment        |
+| ------- |----------------|
+| **Student ID** | 169302         |
+| **Name** | Anastacia Muya |
 
 ### Contribution
 
