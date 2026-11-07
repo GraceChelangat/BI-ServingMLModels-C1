@@ -255,20 +255,93 @@ curl -X POST http://127.0.0.1:5000/recommend/association \
 
 ## Member 5
 
-| Details | Comment |
-| ------- | ------- |
-| **Student ID** | |
-| **Name** | |
-
-### Contribution
-
-*What part of the lab did you personally contribute to (provide a link to the
-branch(es)), and what did you learn from it?*
+| Details        | Comment               |
+|----------------|-----------------------|
+| **Student ID** | 169302                |
+| **Name**       | Anastacia Muya        |
+| **Branch**     | feature/docker-nginx  https://github.com/GraceChelangat/BI-ServingMLModels-C1/tree/feature/docker-nginx|
 
 
-## Requirements
 
+**Contribution**
+5. Docker, Gunicorn and Nginx Deployment
+
+- Wrote the Dockerfile on a python:3.11-slim base. It installs the packages from requirements.txt, copies the project (including the models/ folder) into the image, and starts the API with Gunicorn: `gunicorn --bind 0.0.0.0:5000 --workers 2 --timeout 120 api:app`. The Flask development server is not used.
+- Wrote nginx/nginx.conf, a reverse proxy that forwards all requests to the API container (`proxy_pass http://api:5000`) and passes on the Host and client IP headers.
+- Wrote docker-compose.yml with two services. `api` is built from the Dockerfile and only exposed inside the Docker network. `nginx` uses the nginx:stable image and is published on port 8080. The API can only be reached through Nginx.
+- Added a .dockerignore that leaves out .git, caches and virtual environments but keeps models/, so the saved .joblib files are inside the container.
+- Did not change api.py. The same api.py runs locally, in Docker and on Render.
+- Verified the build: the image built successfully, and the startup logs show `Starting gunicorn`, `Listening at: http://0.0.0.0:5000`, `Using worker: sync` and two workers booting. Both containers were created and started.
+- Verified the models are inside the container: all model files loaded at startup without the RuntimeError that api.py raises when a file is missing, and I loaded the clustering and classification files from inside the running container to read their feature names and categories.
+- Tested through the Nginx port (8080), not the Flask server. Every response carries `Server: nginx/1.30.6`. Endpoints tested: clustering, recommender, classification and regression.
+- Added a simple HTML/CSS/JavaScript demo page (frontend/index.html) served by the same Nginx container at http://localhost:8080/demo/. It calls the API with relative paths (/predict/clustering and /recommend/association) and shows an error message when an input is missing. api.py was not changed.
+**How to run**
+
+Prerequisite: Docker Desktop installed and running.
+```
+docker compose up --build
+```
+Check both containers are up:
+```
+docker compose ps
+```
+Test through Nginx:
+```
+curl -i http://localhost:8080/
+```
+Example response:
+```
+HTTP/1.1 200 OK
+Server: nginx/1.30.6
+Content-Type: application/json
+
+{"endpoint":"/predict/classification","message":"Financial Distress Classification API is running","method":"POST"}
+```
+**Example model request through Nginx:**
+```
+curl -i -X POST http://localhost:8080/predict/clustering \
+  -H "Content-Type: application/json" \
+  -d '{"recency_days": 300, "frequency_per_year": 1, "avg_order_value_kes": 500, "num_categories_purchased": 1}'
+```
+**Example response (200):**
+```
+{"predicted_cluster": 2, "segment_name": "Dormant Low-Value Accounts"}
+```
+Stop everything with: 
+```
+docker compose down
+```
+
+Files added
+
+| File | Purpose |
+|---|---|
+| Dockerfile | Builds the API image and starts Gunicorn |
+| docker-compose.yml | Runs the api and nginx containers together |
+| nginx/nginx.conf | Reverse proxy settings |
+| .dockerignore | Keeps unwanted files out of the image but keeps models/ |
+| frontend/index.html | Demo page for the API, with missing-input error handling   |
+
+Troubleshooting
+
+- 502 Bad Gateway: the API container crashed. Run `docker compose logs api` to see the error.
+- Port 8080 already in use: change "8080:80" to "8081:80" in docker-compose.yml and use port 8081.
+- "Cannot connect to the Docker daemon": Docker Desktop is not running. Open it and wait until it says running.
+- Model not found in the container: the model file is missing from models/ on GitHub, or .dockerignore excludes it.
+- If the first build is slow, that is normal. Later builds use the cache.
+
+What I learned
+
+- Gunicorn is a production server, while `app.run()` is only for development. Gunicorn finds the app through the `module:variable` name (`api:app`).
+- Nginx is a reverse proxy: clients talk to Nginx, and Nginx talks to the API. Inside Docker Compose, containers reach each other by service name, which is why it forwards to `http://api:5000`.
+- `expose` keeps a port private to the Docker network, while `ports` publishes it to the host. Only Nginx is published.
+- Saved model files must be inside the image, so .dockerignore must not exclude models/, and the code must build paths from BASE_DIR instead of using absolute paths from a laptop.
+- A saved model is tied to the library versions it was created with, so requirements.txt needs compatible versions.
+- A running container is only proof if it answers real requests, so I tested through port 8080 and checked the logs and the `Server: nginx` header.
+- Reading a trained pipeline shows which inputs it accepts. For example, credit_rating_band only accepts Investment Grade, Speculative or High Risk, so the exact values matter when writing test requests.
+
+Requirements
 Install the required packages:
-
-```bash
+```
 python -m pip install -r requirements.txt
+```
