@@ -70,8 +70,9 @@ A 405 Method Not Allowed means the route exists but was called with the wrong HT
 
 | Details | Comment |
 | ------- | ------- |
-| **Student ID** | |
-| **Name** | |
+| **Student ID** | 168051|
+| **Name** | Joy Mbote|
+| **Branch** | [`classification-api`](https://github.com/GraceChelangat/BI-ServingMLModels-C1/tree/classification-api) |
 
 ### Contribution
 
@@ -83,8 +84,11 @@ This API uses a saved machine learning pipeline to classify a company's
 financial condition as Healthy, Watch, or Distressed.
 
 The trained model is loaded from:
-
 `models/distress_model_pipeline.joblib`
+
+I implemented the classification endpoint using Flask REST API and loaded the saved model (distress_model_pipeline.joblib) to classify companies as Healthy, Watch, or Distressed. I added input validation, error handling, and automated tests using pytest. All six tests passed.
+I learned how to serve a trained machine learning model through a REST API, validate inputs, test endpoints, and manage code using Git.
+
 
 ---
 
