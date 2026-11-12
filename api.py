@@ -169,13 +169,65 @@ def predict_classification():
 @app.route("/predict/regression", methods=["POST"])
 def predict_regression():
     data = request.get_json(silent=True)
- 
+
     if not isinstance(data, dict):
         return jsonify({
             "error": "Request body must be a valid JSON object."
         }), 400
- 
+
     missing_features = [f for f in REGRESSION_FEATURES if f not in data]
+
+    if missing_features:
+        return jsonify({
+            "error": "Missing required features.",
+            "missing_features": missing_features,
+        }), 400
+
+    input_data = {f: data[f] for f in REGRESSION_FEATURES}
+
+    for feature in REGRESSION_FEATURES:
+        value = input_data[feature]
+
+        if feature in REGRESSION_NUMERIC_FEATURES:
+            # null is allowed: the pipeline imputes missing values
+            # (online_order_count was NaN in the training data).
+            if value is None:
+                input_data[feature] = float("nan")
+                continue
+            try:
+                if isinstance(value, bool):
+                    raise ValueError
+                input_data[feature] = float(value)
+            except (TypeError, ValueError):
+                return jsonify({
+                    "error": f"Feature '{feature}' must be numeric."
+                }), 400
+
+        elif feature in REGRESSION_CATEGORICAL_FEATURES:
+            if not isinstance(value, str) or not value.strip():
+                return jsonify({
+                    "error": f"Feature '{feature}' must be a non-empty string."
+                }), 400
+            input_data[feature] = value.strip()
+
+    input_df = pd.DataFrame([input_data], columns=REGRESSION_FEATURES)
+
+    try:
+        # The pipeline was trained on log1p(daily_sales_revenue_kes),
+        # so np.expm1 converts the prediction back to KES.
+        predicted_log_revenue = regression_model.predict(input_df)[0]
+        prediction = float(np.expm1(predicted_log_revenue))
+
+        return jsonify({
+            "predicted_daily_sales_revenue_kes": round(prediction, 2)
+        }), 200
+
+    except Exception:
+        app.logger.exception("Regression prediction failed.")
+        return jsonify({
+            "error": "Prediction failed. Check the input data and model."
+        }), 500
+
 
 # ---------------- Clustering (K-Means) ----------------
 CLUSTER_BUNDLE_PATH = BASE_DIR / "models" / "ecommerce_clustering_bundle.joblib"
@@ -208,53 +260,6 @@ def predict_clustering():
             "error": "Missing required features.",
             "missing_features": missing_features,
         }), 400
- 
-    input_data = {f: data[f] for f in REGRESSION_FEATURES}
- 
-    for feature in REGRESSION_FEATURES:
-        value = input_data[feature]
- 
-        if feature in REGRESSION_NUMERIC_FEATURES:
-            # null is allowed: the pipeline imputes missing values
-            # (online_order_count was NaN in the training data).
-            if value is None:
-                input_data[feature] = float("nan")
-                continue
-            try:
-                if isinstance(value, bool):
-                    raise ValueError
-                input_data[feature] = float(value)
-            except (TypeError, ValueError):
-                return jsonify({
-                    "error": f"Feature '{feature}' must be numeric."
-                }), 400
- 
-        elif feature in REGRESSION_CATEGORICAL_FEATURES:
-            if not isinstance(value, str) or not value.strip():
-                return jsonify({
-                    "error": f"Feature '{feature}' must be a non-empty string."
-                }), 400
-            input_data[feature] = value.strip()
- 
-    input_df = pd.DataFrame([input_data], columns=REGRESSION_FEATURES)
- 
-    try:
-        # The pipeline was trained on log1p(daily_sales_revenue_kes),
-        # so np.expm1 converts the prediction back to KES.
-        predicted_log_revenue = regression_model.predict(input_df)[0]
-        prediction = float(np.expm1(predicted_log_revenue))
- 
-        return jsonify({
-            "predicted_daily_sales_revenue_kes": round(prediction, 2)
-        }), 200
- 
-    except Exception:
-        app.logger.exception("Regression prediction failed.")
-        return jsonify({
-            "error": "Prediction failed. Check the input data and model."
-        }), 500
- 
- 
 
     values = []
     for feature in CLUSTER_FEATURES:
