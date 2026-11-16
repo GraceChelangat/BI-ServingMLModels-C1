@@ -361,6 +361,7 @@ python -m pip install -r requirements.txt
 
 - I deployed the team's unmodified `api.py` to Render as a Web Service, using the Gunicorn start command `gunicorn api:app --bind 0.0.0.0:$PORT` and the build command `pip install -r requirements.txt`.
 - Live URL: https://bi-servingmlmodels-c1.onrender.com
+- The root link only shows a health message. The four endpoints are POST routes, so test them with curl or Postman, for example: `curl -X POST https://bi-servingmlmodels-c1.onrender.com/predict/clustering -H "Content-Type: application/json" -d '{"recency_days":5,"frequency_per_year":28,"avg_order_value_kes":9500,"num_categories_purchased":6}'`
 - I tested all four endpoints from outside my computer with curl: `/predict/regression`, `/predict/classification`, `/predict/clustering` and `/recommend/association`. All four return correct predictions.
 - While testing, I found that the clustering and regression code had been mixed up in a merge, and I reported it to the team so it could be fixed.
 - I read the Render logs and found that the regression model file had been saved with scikit-learn 1.9.0, while Render uses 1.6.1. I reported it, and the model was saved again with the right version.
