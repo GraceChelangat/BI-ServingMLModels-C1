@@ -345,3 +345,29 @@ Install the required packages:
 ```
 python -m pip install -r requirements.txt
 ```
+
+
+## Member 6
+
+| Details | Comment |
+| ------- | ------- |
+| **Student ID** | 163604 |
+| **Name** | Urvi Patel |
+| **Branch** | [`render-deployment`](https://github.com/GraceChelangat/BI-ServingMLModels-C1/tree/render-deployment) |
+
+### Contribution
+
+**6. Render Deployment**
+
+- I deployed the team's unmodified `api.py` to Render as a Web Service, using the Gunicorn start command `gunicorn api:app --bind 0.0.0.0:$PORT` and the build command `pip install -r requirements.txt`.
+- Live URL: https://bi-servingmlmodels-c1.onrender.com
+- I tested all four endpoints from outside my computer with curl: `/predict/regression`, `/predict/classification`, `/predict/clustering` and `/recommend/association`. All four return correct predictions.
+- While testing, I found that the clustering and regression code had been mixed up in a merge, and I reported it to the team so it could be fixed.
+- I read the Render logs and found that the regression model file had been saved with scikit-learn 1.9.0, while Render uses 1.6.1. I reported it, and the model was saved again with the right version.
+
+### What I learned
+
+- The start command must match the file name. `api:app` means file `api.py`, object `app`.
+- A saved model only loads properly with the same library versions it was saved with.
+- The 500 error message is generic, so the real cause is found in the Render logs.
+- The free tier sleeps after about 15 minutes, so I woke it up before recording.
