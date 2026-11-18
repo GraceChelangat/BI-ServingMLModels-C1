@@ -3,117 +3,146 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Model API Demo</title>
+<title>BI Models: Group Lab Demo</title>
 <style>
-  :root {
-    --brand: #5b4bdb;
-    --brand2: #8a5cf6;
-    --bg: #f3f2fb;
+      :root {
+    --brand: #b8860b;
+    --brand2: #b8860b;
+    --green: #b8860b;
+    --dark: #2b2a26;
+    --bg: #f4f1e8;
     --card: #ffffff;
-    --text: #1f1d3a;
-    --muted: #6b6a85;
-    --ok-bg: #e8f7ef;
-    --ok: #17794a;
-    --err-bg: #fdecec;
-    --err: #b3261e;
+    --text: #25241f;
+    --muted: #6d6a5f;
+    --ok-bg: #faf3dc;
+    --ok: #4a3a05;
+    --err-bg: #fbeceb;
+    --err: #a32117;
+    --line: #d6d1c2;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
     background: var(--bg);
     color: var(--text);
   }
+
+  /* Header: dark band with a mustard stripe underneath */
   header {
-    background: linear-gradient(135deg, var(--brand), var(--brand2));
+    background: var(--dark);
     color: #fff;
-    padding: 40px 20px 70px;
-    text-align: center;
+    padding: 40px 20px 34px;
+    border-bottom: 8px solid var(--brand);
   }
-  header h1 { margin: 0 0 8px; font-size: 2rem; }
-  header p { margin: 0; opacity: 0.9; }
-  main { max-width: 760px; margin: -40px auto 40px; padding: 0 16px; }
-  .tabs {
-    display: flex; gap: 8px; flex-wrap: wrap;
-    margin-bottom: 14px;
+  header h1, header p, header div { max-width: 820px; margin-left: auto; margin-right: auto; }
+  header div { padding: 0; }
+  header h1 {
+    margin-top: 0; margin-bottom: 8px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 2.1rem; font-weight: bold; letter-spacing: 0.3px;
   }
+  header p { margin-top: 0; margin-bottom: 0; color: #d9d5c6; font-size: 1rem; }
+
+  main { max-width: 820px; margin: 30px auto; padding: 0 16px; }
+
+  /* Tabs: separate blocks with a heavy underline on the active one */
+  .tabs { display: flex; flex-wrap: wrap; gap: 4px; }
   .tab {
-    flex: 1; min-width: 150px;
-    background: rgba(255,255,255,0.85);
-    border: none; border-radius: 12px;
-    padding: 12px 14px; font-size: 0.95rem; font-weight: 600;
+    background: #e7e2d3; border: none; border-bottom: 4px solid transparent;
+    padding: 12px 20px; font-size: 0.95rem; font-weight: bold;
     color: var(--muted); cursor: pointer;
-    box-shadow: 0 2px 8px rgba(40,30,120,0.08);
-    transition: all .15s;
   }
-  .tab:hover { transform: translateY(-1px); }
-  .tab.active { background: #fff; color: var(--brand); box-shadow: 0 4px 14px rgba(91,75,219,0.25); }
+  .tab:hover { background: #ddd7c4; color: var(--text); }
+  .tab.active { background: #fff; color: var(--text); border-bottom-color: var(--brand); }
+
+  /* Cards: white panel with a mustard strip down the left edge */
   .card {
-    background: var(--card);
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow: 0 6px 24px rgba(40,30,120,0.10);
     display: none;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-left: 8px solid var(--brand);
+    padding: 28px 28px 30px;
   }
   .card.active { display: block; }
-  .card h2 { margin: 0 0 4px; font-size: 1.25rem; }
-  .card .sub { margin: 0 0 18px; color: var(--muted); font-size: 0.92rem; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
-  label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; }
+  .card h2 {
+    margin: 0 0 6px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.6rem; font-weight: bold;
+  }
+  .card .sub {
+    margin: 0 0 22px; padding-bottom: 16px;
+    color: var(--muted); border-bottom: 1px solid var(--line);
+  }
+
+  /* Form fields */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 22px; }
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+  label {
+    display: block; margin-bottom: 5px;
+    font-size: 0.75rem; font-weight: bold;
+    text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted);
+  }
   input, select {
-    width: 100%; padding: 10px 12px;
-    border: 1.5px solid #dcdaf0; border-radius: 10px;
-    font-size: 0.95rem; background: #fff; color: var(--text);
+    width: 100%; padding: 11px 12px;
+    border: 1px solid #aaa593; border-bottom: 3px solid #aaa593;
+    border-radius: 0; font-size: 1rem; background: #fbfaf5; color: var(--text);
   }
-  input:focus, select:focus {
-    outline: none; border-color: var(--brand);
-    box-shadow: 0 0 0 3px rgba(91,75,219,0.15);
-  }
+  input:hover, select:hover { background: #fff; }
+  input:focus, select:focus { outline: none; border-color: var(--brand); background: #fff; }
+
+  /* Buttons */
   button.go {
-    margin-top: 18px; width: 100%;
-    padding: 13px; border: none; border-radius: 12px;
-    background: linear-gradient(135deg, var(--brand), var(--brand2));
-    color: #fff; font-size: 1rem; font-weight: 600; cursor: pointer;
-    transition: transform .1s, opacity .15s;
+    margin-top: 24px; padding: 13px 30px;
+    background: var(--dark); color: #fff;
+    border: none; border-bottom: 4px solid var(--brand); border-radius: 0;
+    font-size: 0.95rem; font-weight: bold; letter-spacing: 0.4px; cursor: pointer;
   }
-  button.go:hover { transform: translateY(-1px); }
+  button.go:hover { background: var(--brand); border-bottom-color: var(--dark); }
   button.go:disabled { opacity: 0.6; cursor: wait; }
-  .result { margin-top: 18px; padding: 16px; border-radius: 12px; display: none; }
+
+  /* Results */
+  .result { display: none; margin-top: 24px; padding: 18px 20px; border-left: 8px solid var(--brand); }
   .result.ok { display: block; background: var(--ok-bg); color: var(--ok); }
-  .result.err { display: block; background: var(--err-bg); color: var(--err); font-weight: 600; }
-  .big { font-size: 1.3rem; font-weight: 700; margin-bottom: 4px; }
+  .result.err { display: block; background: var(--err-bg); color: var(--err); border-left-color: var(--err); font-weight: bold; }
+  .big {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.9rem; font-weight: bold; margin-bottom: 4px; color: var(--text);
+  }
+
+  /* Recommender */
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
   .chip {
-    border: 1.5px solid #dcdaf0; background: #fff; color: var(--text);
-    padding: 7px 14px; border-radius: 999px; cursor: pointer;
-    font-size: 0.88rem; transition: all .12s;
+    border: 1px solid #aaa593; background: #fbfaf5; color: var(--text);
+    padding: 8px 14px; border-radius: 0; cursor: pointer; font-size: 0.9rem;
   }
-  .chip:hover { border-color: var(--brand); }
-  .chip.sel { background: var(--brand); border-color: var(--brand); color: #fff; }
-  .rec {
-    background: #fff; border-radius: 10px; padding: 12px 14px; margin-top: 10px;
-    color: var(--text); border-left: 5px solid var(--brand);
-  }
+  .chip:hover { border-color: var(--brand); background: #fff; }
+  .chip.sel { background: var(--dark); border-color: var(--dark); color: #fff; }
+  .rec { background: #fff; border: 1px solid var(--line); border-left: 5px solid var(--dark); padding: 12px 14px; margin-top: 10px; color: var(--text); }
   .rec small { color: var(--muted); display: block; margin-top: 3px; }
-  .bar-row { margin-top: 10px; color: var(--text); font-size: 0.88rem; }
-  .bar { height: 10px; background: #e3e1f5; border-radius: 99px; overflow: hidden; margin-top: 4px; }
-  .bar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--brand), var(--brand2)); }
-  footer { text-align: center; color: var(--muted); font-size: 0.8rem; padding-bottom: 30px; }
+
+  /* Probability bars */
+  .bar-row { margin-top: 12px; color: var(--text); font-size: 0.9rem; font-weight: bold; }
+  .bar { height: 12px; background: #e3dec9; margin-top: 4px; }
+  .bar > span { display: block; height: 100%; background: var(--dark); }
+
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Model API Demo</h1>
-  <p>Customer segments, show recommendations and financial distress, served by a Flask API behind Gunicorn and Nginx</p>
+  <h1>BI Models: Group C1 Lab Demo</h1>
+  <p>Four models from our group labs, served through one Flask API behind Gunicorn and Nginx.</p>
 </header>
 
 <main>
   <div class="tabs">
-    <button class="tab active" data-tab="cluster">Customer Segments</button>
-    <button class="tab" data-tab="rec">Show Recommender</button>
-    <button class="tab" data-tab="class">Distress Check</button>
+    <button class="tab active" data-tab="cluster">Customer segments</button>
+    <button class="tab" data-tab="rec">Show recommender</button>
+    <button class="tab" data-tab="class">Financial distress</button>
+      <button class="tab" data-tab="reg">Daily sales</button>
   </div>
 
   <!-- Clustering -->
@@ -133,7 +162,7 @@
   <!-- Recommender -->
   <section class="card" id="rec">
     <h2>Show recommender</h2>
-    <p class="sub">Tap the shows a viewer has watched, then get recommendations.</p>
+    <p class="sub">Select the shows a viewer has watched, then get recommendations.</p>
     <div class="chips" id="chips"></div>
     <button class="go" onclick="recommend(this)">Get recommendations</button>
     <div id="rec-result" class="result"></div>
@@ -164,9 +193,37 @@
     <button class="go" onclick="predictClass(this)">Predict category</button>
     <div id="class-result" class="result"></div>
   </section>
-</main>
 
-<footer>Every prediction comes from a saved model file loaded by the API.</footer>
+      <!-- Regression -->
+  <section class="card" id="reg">
+    <h2>Daily sales forecast</h2>
+    <p class="sub">Describe a retail store to predict its daily sales revenue in KES.</p>
+    <div class="grid">
+      <div><label for="store_format">Store format</label>
+        <select id="store_format"><option value="">Select...</option>
+          <option>Convenience</option><option>Hypermarket</option><option>Kiosk</option><option>Supermarket</option></select></div>
+      <div><label for="location_type">Location type</label>
+        <select id="location_type"><option value="">Select...</option>
+          <option>CBD</option><option>Mall</option><option>Residential</option><option>Street</option></select></div>
+      <div><label for="delivery_available">Delivery available</label>
+        <select id="delivery_available"><option value="">Select...</option><option>No</option><option>Yes</option></select></div>
+      <div><label for="store_size_category">Store size category</label>
+        <select id="store_size_category"><option value="">Select...</option>
+          <option>Large</option><option>Medium</option><option>Small</option></select></div>
+      <div><label for="store_age_years">Store age (years)</label><input id="store_age_years" type="number" step="any" placeholder="e.g. 5"></div>
+      <div><label for="store_size_sqm">Store size (sqm)</label><input id="store_size_sqm" type="number" step="any" placeholder="e.g. 450"></div>
+      <div><label for="num_staff">Number of staff</label><input id="num_staff" type="number" step="any" placeholder="e.g. 12"></div>
+      <div><label for="promotions_active">Active promotions</label><input id="promotions_active" type="number" step="any" placeholder="e.g. 1"></div>
+      <div><label for="footfall_count">Footfall count</label><input id="footfall_count" type="number" step="any" placeholder="e.g. 800"></div>
+      <div><label for="loyalty_program_members">Loyalty members</label><input id="loyalty_program_members" type="number" step="any" placeholder="e.g. 150"></div>
+      <div><label for="online_order_count">Online orders</label><input id="online_order_count" type="number" step="any" placeholder="e.g. 40"></div>
+      <div><label for="avg_basket_size_kes">Average basket (KES)</label><input id="avg_basket_size_kes" type="number" step="any" placeholder="e.g. 1200"></div>
+      <div><label for="local_events_nearby">Local events nearby</label><input id="local_events_nearby" type="number" step="any" placeholder="e.g. 0"></div>
+    </div>
+    <button class="go" onclick="predictReg(this)">Predict daily sales</button>
+    <div id="reg-result" class="result"></div>
+  </section>
+</main>
 
 <script>
 const SHOWS = ["Cooking Masters","Crime City","Galactic Wars","Laugh Track","Little Explorers",
@@ -223,19 +280,45 @@ async function withButton(btn, fn) {
   try { await fn(); } finally { btn.disabled = false; btn.textContent = old; }
 }
 
-// Collect fields; return null and show an error if any are missing
+function apiError(data) {
+  let msg = data.error || "Request failed.";
+  if (Array.isArray(data.missing_features) && data.missing_features.length) {
+    msg += " Missing: " + data.missing_features.join(", ") + ".";
+  }
+  return esc(msg);
+}
+
 function collect(ids, numericIds, resultId) {
   const body = {};
+  const missing = [];
   for (const id of ids) {
-    const v = document.getElementById(id).value.trim();
+    const el = document.getElementById(id);
+    const v = el.value.trim();
+    el.style.borderColor = "";
     if (v === "") {
-      showMsg(resultId, "err", "Please fill in: " + id.replace(/_/g, " "));
-      document.getElementById(id).focus();
-      return null;
+      missing.push(id);
+      el.style.borderColor = "#a32117";
+    } else {
+      body[id] = numericIds.includes(id) ? Number(v) : v;
     }
-    body[id] = numericIds.includes(id) ? Number(v) : v;
   }
-  return body;
+  if (missing.length === 0) return body;
+
+  const nameOf = id => {
+    const lab = document.querySelector('label[for="' + id + '"]');
+    return lab ? lab.textContent : id.replace(/_/g, " ");
+  };
+  let msg;
+  if (missing.length === 1) {
+    msg = "Please fill in: " + nameOf(missing[0]) + ".";
+  } else if (missing.length <= 3) {
+    msg = "Please fill in these fields: " + missing.map(nameOf).join(", ") + ".";
+  } else {
+    msg = "Please complete the form. " + missing.length + " of " + ids.length + " fields are still empty.";
+  }
+  showMsg(resultId, "err", esc(msg));
+  document.getElementById(missing[0]).focus();
+  return null;
 }
 
 function predictCluster(btn) {
@@ -246,7 +329,7 @@ function predictCluster(btn) {
     const r = await callApi("/predict/clustering", body);
     if (r.ok) showMsg("cluster-result", "ok",
       `<div class="big">${esc(r.data.segment_name)}</div>Cluster ${esc(r.data.predicted_cluster)}`);
-    else showMsg("cluster-result", "err", esc(r.data.error || "Request failed."));
+    else showMsg("cluster-result", "err", apiError(r.data));
   });
 }
 
@@ -254,7 +337,7 @@ function recommend(btn) {
   if (selected.size === 0) { showMsg("rec-result", "err", "Please select at least one show."); return; }
   withButton(btn, async () => {
     const r = await callApi("/recommend/association", { items: [...selected], top_n: 3 });
-    if (!r.ok) { showMsg("rec-result", "err", esc(r.data.error || "Request failed.")); return; }
+    if (!r.ok) { showMsg("rec-result", "err", apiError(r.data)); return; }
     if (r.data.recommendations.length === 0) { showMsg("rec-result", "ok", esc(r.data.message)); return; }
     const cards = r.data.recommendations.map(x =>
       `<div class="rec"><strong>${esc(x.show_name)}</strong>
@@ -270,7 +353,7 @@ function predictClass(btn) {
   if (!body) return;
   withButton(btn, async () => {
     const r = await callApi("/predict/classification", body);
-    if (!r.ok) { showMsg("class-result", "err", esc(r.data.error || "Request failed.")); return; }
+    if (!r.ok) { showMsg("class-result", "err", apiError(r.data)); return; }
     let html = `<div class="big">${esc(r.data.predicted_category)}</div>`;
     const p = r.data.class_probabilities || {};
     for (const [label, val] of Object.entries(p)) {
@@ -278,6 +361,20 @@ function predictClass(btn) {
       html += `<div class="bar-row">${esc(label)}: ${pct}%<div class="bar"><span style="width:${pct}%"></span></div></div>`;
     }
     showMsg("class-result", "ok", html);
+  });
+}
+
+function predictReg(btn) {
+  const text = ["store_format","location_type","delivery_available","store_size_category"];
+  const nums = ["store_age_years","store_size_sqm","num_staff","promotions_active","footfall_count",
+                "loyalty_program_members","online_order_count","avg_basket_size_kes","local_events_nearby"];
+  const body = collect([...text, ...nums], nums, "reg-result");
+  if (!body) return;
+  withButton(btn, async () => {
+    const r = await callApi("/predict/regression", body);
+    if (!r.ok) { showMsg("reg-result", "err", apiError(r.data)); return; }
+    const kes = Number(r.data.predicted_daily_sales_revenue_kes).toLocaleString("en-KE", { maximumFractionDigits: 0 });
+    showMsg("reg-result", "ok", `<div class="big">KES ${esc(kes)}</div>Predicted daily sales revenue`);
   });
 }
 </script>
