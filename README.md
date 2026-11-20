@@ -365,6 +365,7 @@ python -m pip install -r requirements.txt
 - I tested all four endpoints from outside my computer with curl: `/predict/regression`, `/predict/classification`, `/predict/clustering` and `/recommend/association`. All four return correct predictions.
 - While testing, I found that the clustering and regression code had been mixed up in a merge, and I reported it to the team so it could be fixed.
 - I read the Render logs and found that the regression model file had been saved with scikit-learn 1.9.0, while Render uses 1.6.1. I reported it, and the model was saved again with the right version.
+- I recorded the local, Docker + Nginx and Render demonstrations, and compiled them together with Noella's clip into one video, trimming it to fit the 10-minute limit.
 
 ### What I learned
 
@@ -372,3 +373,23 @@ python -m pip install -r requirements.txt
 - A saved model only loads properly with the same library versions it was saved with.
 - The 500 error message is generic, so the real cause is found in the Render logs.
 - The free tier sleeps after about 15 minutes, so I woke it up before recording.
+- How to record my screen, then trim and join several clips into one video with Clipchamp.
+
+
+## Chosen Level of Difficulty
+
+**Intermediate**
+
+## Video Demonstration
+
+**Link to the video:** https://drive.google.com/file/d/1h9I9Yt7Fj3i18cP_5lDt0IdRb1hoajH_/view?usp=sharing
+
+Video order: 1) Local (Flask dev server, port 5000), 2) Docker + Nginx (port 8080), 3) Render (bi-servingmlmodels-c1.onrender.com), 4)Web page demo: HTML, CSS and vanilla JavaScript, served through Nginx.
+
+## Public URLs
+
+| Deployment target | URL |
+|:--|:--|
+| Render (the full `api.py`, all endpoints) | https://bi-servingmlmodels-c1.onrender.com (base URL; the root only shows a health message. Live POST endpoints: `/predict/regression`, `/predict/classification`, `/predict/clustering`, `/recommend/association`. See the video, Render section.) |
+| Hugging Face Space (Gradio, one tab per model) | |
+| Streamlit Community Cloud app (one tab per model) | |
