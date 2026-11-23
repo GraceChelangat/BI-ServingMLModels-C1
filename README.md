@@ -98,8 +98,7 @@ I learned how to serve a trained machine learning model through a REST API, vali
 | ------- | ------- |
 | **Student ID** |166567 |
 | **Name** |Nicole Wachira |
-| **Branch** | [`feature/clustering-endpoint`](https://github.com/GraceChelangat/BI-ServingMLModels-C1/tree/feature/clustering-endpoint) |
-
+| **Branch** | [`feature/clustering-endpoint`](https://github.com/GraceChelangat/BI-ServingMLModels-C1/tree/feature/clustering-endpoint), [`feature/gradio-streamlit`](https://github.com/GraceChelangat/BI-ServingMLModels-C1/tree/feature/gradio-streamlit) |
 ### Contribution
 
 **1. E-commerce Customer Clustering API**
@@ -153,6 +152,28 @@ I learned how to serve a trained machine learning model through a REST API, vali
 - Models are loaded once at startup and never retrained inside the API. This is faster and keeps predictions consistent.
 - Clear error messages (400) and documentation matter, because the API is how other people use the model.
 - A 405 Method Not Allowed means the route exists but was called with the wrong HTTP method (opening a POST route in the browser sends GET).
+
+
+**. Gradio (Hugging Face Space) and Streamlit apps (Advanced tier)**
+
+- Wrote `inference.py`, a shared module that loads the same four saved files in `models/` (`retail_sales_regressor.joblib`, `distress_model_pipeline.joblib`, `ecommerce_clustering_bundle.joblib`, `association_rules_bundle.joblib`) and applies the same input handling and prediction logic as the Flask routes in `api.py`. Nothing is retrained, and `api.py` was not changed.
+- Built one Gradio app (`gradio_space/app.py`) with a tab per model and published it as a Hugging Face Space. The dropdown options and default values are read from the saved pipelines, so the forms always match the trained models.
+- Built one Streamlit app (`streamlit_app/app.py`) with the same four tabs and published it on Streamlit Community Cloud. Because Streamlit Cloud requires admin rights on the repo it deploys from, it was deployed from my fork: https://github.com/NicoleWachira/BI-ServingMLModels-C1 (same code as `main`).
+- Added `make_space.py`, which builds the upload folder for the Space (app, `inference.py`, requirements, and the `models/` folder).
+- Fixed Hugging Face runtime problems from the logs: Gradio's SSR mode shut the app down at startup (fixed with `demo.launch(ssr_mode=False)`), and a free account cannot move a Space off ZeroGPU hardware, so a no-op `@spaces.GPU` function satisfies its startup check. The models still run on the CPU.
+- Tested all four tabs of both apps with real predictions.
+
+**Live apps**
+
+- Hugging Face Space: https://huggingface.co/spaces/tetuthedeveloper/ml-models-demo
+- Streamlit app: https://nicole-ml-models-demo.streamlit.app
+
+**What I learned (Gradio and Streamlit)**
+
+- A UI can reuse the same saved model files as the API, as long as it applies the same preprocessing and the same pinned library versions.
+- Reading the fitted pipeline (its encoder categories and imputer values) is a reliable way to build input forms without hard-coding values.
+- A deployment can build successfully and still fail at startup, so the Container logs are the place to look.
+- Hosting platforms have their own rules (admin rights on the repo for Streamlit Cloud, GPU checks on ZeroGPU Spaces) that are only found by deploying.
 
 ---
 
@@ -378,7 +399,7 @@ python -m pip install -r requirements.txt
 
 ## Chosen Level of Difficulty
 
-**Intermediate**
+**ADVANCED**
 
 ## Video Demonstration
 
@@ -391,5 +412,5 @@ Video order: 1) Local (Flask dev server, port 5000), 2) Docker + Nginx (port 808
 | Deployment target | URL |
 |:--|:--|
 | Render (the full `api.py`, all endpoints) | https://bi-servingmlmodels-c1.onrender.com (base URL; the root only shows a health message. Live POST endpoints: `/predict/regression`, `/predict/classification`, `/predict/clustering`, `/recommend/association`. See the video, Render section.) |
-| Hugging Face Space (Gradio, one tab per model) | |
-| Streamlit Community Cloud app (one tab per model) | |
+| Hugging Face Space (Gradio, one tab per model) | https://huggingface.co/spaces/tetuthedeveloper/ml-models-demo |
+| Streamlit Community Cloud app (one tab per model) | https://nicole-ml-models-demo.streamlit.app |
